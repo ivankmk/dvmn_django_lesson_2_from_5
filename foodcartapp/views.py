@@ -8,10 +8,32 @@ import phonenumbers
 from phonenumbers import carrier
 from phonenumbers.phonenumberutil import number_type
 import json
-
+from rest_framework.serializers import Serializer
+from rest_framework.serializers import CharField
+from rest_framework.serializers import ModelSerializer
 
 from .models import Product, Order, OrderItem, ProductCategory
 
+
+class OrderItemSerializer(ModelSerializer):
+
+    class Meta:
+        model = OrderItem
+        fields = ['product', 'quantity']
+
+
+class OrderSerializer(ModelSerializer):
+    products = OrderItemSerializer(
+        many=True, allow_empty=False
+    )
+
+    class Meta:
+        model = Order
+        fields = [
+            'firstname', 'lastname',
+            'address', 'phonenumber',
+            'products',
+        ]
 
 def banners_list_api(request):
     # FIXME move data to db?
@@ -66,62 +88,46 @@ def product_list_api(request):
 
 
 def validate(order):
-    required_keys = [
-        'firstname', 'lastname', 'phonenumber', 'address', 'products'
-        ]
+    errors = []
     empty_keys = []
-    absent_keys = []
-
-    for key in required_keys:
-        if key not in order.keys():
-            absent_keys.append(key)
-    if absent_keys:
-        raise ValidationError(
-            {', '.join(absent_keys): 'Обязательное поле.'}
-        )
 
     for key in order.keys():
         if order[key] is None or order[key] == "":
             empty_keys.append(key)
     if empty_keys:
-        raise ValidationError(
-            {', '.join(empty_keys): 'Это поле не может быть пустым.'}
-        )
+        errors.append(
+            {', '.join(empty_keys): 'Это поле не может быть пустым.'})
 
     if isinstance(order['firstname'], list):
-        raise ValidationError(
-            {'firstname': ' Not a valid string.'}
-        )
+        errors.append({'firstname': ' Not a valid string.'})
 
     if isinstance(order['products'], list) and len(order['products']) == 0:
-        raise ValidationError(
-            {'products': 'Этот список не может быть пустым.'}
-        )
+        errors.append({'products': 'Этот список не может быть пустым.'})
 
     if isinstance(order['products'], str):
-        raise ValidationError(
-            {'products': 'Ожидался list со значениями, но был получен "str".'}
-        )
+        errors.append(
+            {'products': 'Ожидался list со значениями, но был получен "str".'})
 
     for ordered_product in order['products']:
         if not Product.objects.filter(id=ordered_product['product']):
-            raise ValidationError(
-                {'products':
-                    f'Недопустимый продукт {ordered_product["product"]}'}
-            )
+            errors.append({
+                'products': f'Недопустимый продукт {ordered_product["product"]}'
+            })
 
     if not carrier._is_mobile(
         number_type(phonenumbers.parse(order['phonenumber']))
     ):
-        raise ValidationError(
-            {'phonenumber': 'Введен некорректный номер телефона.'}
-        )
+        errors.append({'phonenumber': 'Введен некорректный номер телефона.'})
+
+    if errors:
+        raise ValidationError(errors)
 
 
 @api_view(['POST'])
 def register_order(request):
-    order = request.data
-    validate(order)
+
+    serializer = OrderSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
 
     customer = Order.objects.create(
         firstname=order['firstname'],
