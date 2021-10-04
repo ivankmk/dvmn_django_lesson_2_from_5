@@ -2,6 +2,7 @@ from django.http import JsonResponse
 from django.templatetags.static import static
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.serializers import ValidationError
 from rest_framework import status
 import phonenumbers
 from phonenumbers import carrier
@@ -64,10 +65,10 @@ def product_list_api(request):
     })
 
 
-@api_view(['POST'])
-def register_order(request):
-    required_keys = ['firstname', 'lastname', 'phonenumber', 'address']
-    order = request.data
+def validate(order):
+    required_keys = [
+        'firstname', 'lastname', 'phonenumber', 'address', 'products'
+        ]
     empty_keys = []
     absent_keys = []
 
@@ -75,52 +76,52 @@ def register_order(request):
         if key not in order.keys():
             absent_keys.append(key)
     if absent_keys:
-        content = {
-            ', '.join(absent_keys): 'Обязательное поле.'
-        }
-        return Response(content, status=status.HTTP_406_NOT_ACCEPTABLE)
+        raise ValidationError(
+            {', '.join(absent_keys): 'Обязательное поле.'}
+        )
 
     for key in order.keys():
         if order[key] is None or order[key] == "":
             empty_keys.append(key)
     if empty_keys:
-        content = {
-            ', '.join(empty_keys): 'Это поле не может быть пустым.'
-        }
-        return Response(content, status=status.HTTP_406_NOT_ACCEPTABLE)
+        raise ValidationError(
+            {', '.join(empty_keys): 'Это поле не может быть пустым.'}
+        )
 
     if isinstance(order['firstname'], list):
-        content = {
-            'firstname': ' Not a valid string.'
-        }
-        return Response(content, status=status.HTTP_406_NOT_ACCEPTABLE)
+        raise ValidationError(
+            {'firstname': ' Not a valid string.'}
+        )
 
     if isinstance(order['products'], list) and len(order['products']) == 0:
-        content = {
-            'products': 'Этот список не может быть пустым.'
-        }
-        return Response(content, status=status.HTTP_406_NOT_ACCEPTABLE)
+        raise ValidationError(
+            {'products': 'Этот список не может быть пустым.'}
+        )
 
     if isinstance(order['products'], str):
-        content = {
-            'products': 'Ожидался list со значениями, но был получен "str".'
-        }
-        return Response(content, status=status.HTTP_406_NOT_ACCEPTABLE)
+        raise ValidationError(
+            {'products': 'Ожидался list со значениями, но был получен "str".'}
+        )
 
     for ordered_product in order['products']:
         if not Product.objects.filter(id=ordered_product['product']):
-            content = {
-                'products': f'Недопустимый продукт {ordered_product["product"]}'
-            }
-            return Response(content, status=status.HTTP_406_NOT_ACCEPTABLE)
+            raise ValidationError(
+                {'products':
+                    f'Недопустимый продукт {ordered_product["product"]}'}
+            )
 
     if not carrier._is_mobile(
         number_type(phonenumbers.parse(order['phonenumber']))
     ):
-        content = {
-            'phonenumber': 'Введен некорректный номер телефона.'
-        }
-        return Response(content, status=status.HTTP_406_NOT_ACCEPTABLE)
+        raise ValidationError(
+            {'phonenumber': 'Введен некорректный номер телефона.'}
+        )
+
+
+@api_view(['POST'])
+def register_order(request):
+    order = request.data
+    validate(order)
 
     customer = Order.objects.create(
         firstname=order['firstname'],
