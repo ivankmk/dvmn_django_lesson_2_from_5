@@ -2,17 +2,9 @@ from django.http import JsonResponse
 from django.templatetags.static import static
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework.serializers import ValidationError
-from rest_framework import status
-import phonenumbers
-from phonenumbers import carrier
-from phonenumbers.phonenumberutil import number_type
-import json
-from rest_framework.serializers import Serializer
-from rest_framework.serializers import CharField
 from rest_framework.serializers import ModelSerializer
 
-from .models import Product, Order, OrderItem, ProductCategory
+from .models import Product, Order, OrderItem
 
 
 class OrderItemSerializer(ModelSerializer):
@@ -109,5 +101,5 @@ def register_order(request):
         )
 
     serialized = OrderSerializer(order)
-    
+
     return Response(serialized.data)
