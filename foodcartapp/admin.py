@@ -17,6 +17,11 @@ class OrderItemInline(admin.TabularInline):
     extra = 0
 
 
+class OrderInline(admin.TabularInline):
+    model = Order
+    extra = 0
+
+
 @admin.register(Restaurant)
 class RestaurantAdmin(admin.ModelAdmin):
     search_fields = [
