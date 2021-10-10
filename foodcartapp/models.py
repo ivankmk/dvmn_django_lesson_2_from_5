@@ -149,6 +149,11 @@ class Order(models.Model):
         verbose_name='Телефон'
     )
 
+    is_processed = models.BooleanField(
+        default=False,
+        verbose_name='Заказ обработан?'
+    )
+
     objects = OrderQuerySet.as_manager()
 
     class Meta:
