@@ -161,6 +161,15 @@ class Order(models.Model):
         verbose_name='Статус заказа'
     )
 
+    comment = models.CharField(
+        max_length=510,
+        verbose_name='Комментарий к заказу',
+        null=True,
+        blank=True
+    )
+
+
+
     objects = OrderQuerySet.as_manager()
 
     class Meta:
