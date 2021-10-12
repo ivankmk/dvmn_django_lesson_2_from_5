@@ -3,6 +3,11 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from phonenumber_field.modelfields import PhoneNumberField
 from django.db.models import Sum, F
 
+ORDER_STATUS_CHOICES = (
+    ('ОБРАБОТАН', 'Обработан'),
+    ('НЕ ОБРАБОТАН', 'Не обработан'),
+)
+
 
 class Restaurant(models.Model):
     name = models.CharField(
@@ -149,9 +154,11 @@ class Order(models.Model):
         verbose_name='Телефон'
     )
 
-    is_processed = models.BooleanField(
-        default=False,
-        verbose_name='Заказ обработан?'
+    order_status = models.CharField(
+        max_length=255,
+        choices=ORDER_STATUS_CHOICES,
+        default='НЕ ОБРАБОТАН',
+        verbose_name='Статус заказа'
     )
 
     objects = OrderQuerySet.as_manager()

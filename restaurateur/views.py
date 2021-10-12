@@ -75,7 +75,8 @@ def view_products(request):
             **default_availability,
             **{item.restaurant_id: item.availability for item in product.menu_items.all()},
         }
-        orderer_availability = [availability[restaurant.id] for restaurant in restaurants]
+        orderer_availability = [availability[restaurant.id]
+                                for restaurant in restaurants]
 
         products_with_restaurants.append(
             (product, orderer_availability)
@@ -96,7 +97,8 @@ def view_restaurants(request):
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
-    orders = Order.objects.filter(is_processed=False).calculate_order_price()
+    orders = Order.objects.filter(
+        order_status="НЕ ОБРАБОТАН").calculate_order_price()
 
     return render(request, template_name='order_items.html', context={
         'order_items': orders
