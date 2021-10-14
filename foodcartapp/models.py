@@ -2,6 +2,7 @@ from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from phonenumber_field.modelfields import PhoneNumberField
 from django.db.models import Sum, F
+import datetime
 
 ORDER_STATUS_CHOICES = (
     ('ОБРАБОТАН', 'Обработан'),
@@ -168,7 +169,10 @@ class Order(models.Model):
         blank=True
     )
 
-
+    registered_at = models.DateTimeField(
+        default=datetime.datetime.now, null=True)
+    called_at = models.DateTimeField(null=True, blank=True)
+    delivered_at = models.DateTimeField(null=True, blank=True)
 
     objects = OrderQuerySet.as_manager()
 
