@@ -9,6 +9,11 @@ ORDER_STATUS_CHOICES = (
     ('НЕ ОБРАБОТАН', 'Не обработан'),
 )
 
+ORDER_PAYMENT_METHODS = (
+    ('ОНЛАЙН', 'Оплата онлайн'),
+    ('НАЛИЧНЫЕ', 'Оплата наличными'),
+)
+
 
 class Restaurant(models.Model):
     name = models.CharField(
@@ -170,9 +175,21 @@ class Order(models.Model):
     )
 
     registered_at = models.DateTimeField(
-        default=datetime.datetime.now, null=True)
-    called_at = models.DateTimeField(null=True, blank=True)
-    delivered_at = models.DateTimeField(null=True, blank=True)
+        default=datetime.datetime.now, null=True
+    )
+    called_at = models.DateTimeField(
+        null=True, blank=True
+    )
+    delivered_at = models.DateTimeField(
+        null=True, blank=True
+    )
+
+    payment_method = models.CharField(
+        max_length=255,
+        choices=ORDER_PAYMENT_METHODS,
+        verbose_name='Способ оплаты',
+        default='НАЛИЧНЫЕ'
+    )
 
     objects = OrderQuerySet.as_manager()
 
