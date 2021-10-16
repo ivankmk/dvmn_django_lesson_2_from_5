@@ -191,6 +191,15 @@ class Order(models.Model):
         default='НАЛИЧНЫЕ'
     )
 
+    restaraunt = models.ForeignKey(
+        Restaurant,
+        related_name='restaraunt_orders',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name='ресторан'
+    )
+
     objects = OrderQuerySet.as_manager()
 
     class Meta:
