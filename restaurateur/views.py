@@ -6,8 +6,11 @@ from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
 
+from place.utils import fetch_coordinates
+from star_burger.settings import YANDEX_API_KEY
+from geopy import distance
 
-from foodcartapp.models import Product, Restaurant, Order
+from foodcartapp.models import Product, Restaurant, Order, RestaurantMenuItem
 
 
 class Login(forms.Form):
@@ -98,7 +101,37 @@ def view_restaurants(request):
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
     orders = Order.objects.filter(
-        order_status="НЕ ОБРАБОТАН").calculate_order_price()
+        order_status='НЕ ОБРАБОТАН').calculate_order_price()
+    menu = RestaurantMenuItem.objects.filter(availability=True).select_related(
+        'restaurant').select_related('product')
+
+    menu_items = {}
+    for menu_item in menu:
+        menu_items.setdefault(menu_item.product.id, list()
+                              ).append(menu_item.restaurant)
+
+    for order in orders:
+        order_items = order.ordered_items.all().values('product')
+        order_items_restaurants = [
+            menu_items[order_item['product']] for order_item in order_items]
+        order_restaurants = set.intersection(*[set(
+            order_item_restaurants) for order_item_restaurants in order_items_restaurants])
+        order.order_restaurants = order_restaurants
+
+        order_coordinates = fetch_coordinates(
+            YANDEX_API_KEY, order.address)
+        order_restaurants_coordinates = []
+        for order_restaurant in order_restaurants:
+            restaurant_coordinates = fetch_coordinates(
+                YANDEX_API_KEY, order_restaurant.address)
+            restaurant_distance = distance.distance(
+                order_coordinates, restaurant_coordinates).km
+
+            order_restaurants_coordinates.append(
+                [order_restaurant, round(restaurant_distance, 2)])
+
+        order.order_restaurants = sorted(
+            order_restaurants_coordinates, key=lambda restaurant: restaurant[1])
 
     return render(request, template_name='order_items.html', context={
         'order_items': orders
