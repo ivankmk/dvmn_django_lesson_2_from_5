@@ -8,6 +8,8 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from .models import (Product, ProductCategory, Restaurant,
                      RestaurantMenuItem, OrderItem, Order)
 
+from place.models import Place
+
 
 class RestaurantMenuItemInline(admin.TabularInline):
     model = RestaurantMenuItem
@@ -112,6 +114,10 @@ class ProductAdmin(admin.ModelAdmin):
 
 
 @admin.register(ProductCategory)
+class ProductAdmin(admin.ModelAdmin):
+    pass
+
+@admin.register(Place)
 class ProductAdmin(admin.ModelAdmin):
     pass
 

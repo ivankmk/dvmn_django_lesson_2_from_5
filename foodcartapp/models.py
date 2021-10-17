@@ -3,6 +3,8 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from phonenumber_field.modelfields import PhoneNumberField
 from django.db.models import Sum, F
 import datetime
+from place.utils import fetch_coordinates
+from geopy import distance
 
 ORDER_STATUS_CHOICES = (
     ('ОБРАБОТАН', 'Обработан'),
@@ -208,6 +210,34 @@ class Order(models.Model):
 
     def __str__(self):
         return f"{self.firstname} - {self.lastname}"
+
+    def fetch_restaurants_distance(self, menu_items):
+        order_items = self.ordered_items.all().values('product')
+        order_items_restaurants = [
+            menu_items[order_item['product']] for order_item in order_items]
+        order_restaurants = set.intersection(
+            *[set(order_item_restaurants) for order_item_restaurants in order_items_restaurants])
+
+        order_coordinates = fetch_coordinates(self.address)
+        order_restaurants_coordinates = []
+        for order_restaurant in order_restaurants:
+            restaurant_distance = self.fetch_distance(
+                order_coordinates, order_restaurant)
+            order_restaurants_coordinates.append(
+                [order_restaurant, round(restaurant_distance, 3)])
+
+        return sorted(order_restaurants_coordinates, key=lambda restaurant: restaurant[1])
+
+    @staticmethod
+    def fetch_distance(order_coordinates, order_restaurant):
+        if not order_coordinates[0]:
+            return 0
+        restaurant_coordinates = fetch_coordinates(order_restaurant.address)
+        if not restaurant_coordinates[0]:
+            return 0
+        restaurant_distance = distance.distance(
+            order_coordinates, restaurant_coordinates).km
+        return restaurant_distance
 
 
 class OrderItem(models.Model):
