@@ -215,13 +215,16 @@ class Order(models.Model):
     def __str__(self):
         return f"{self.firstname} - {self.lastname}"
 
-    def fetch_restaurants_distance(self, menu_items):
-        order_items = self.ordered_items.all().values('product')
+    def get_available_restaraunts(self, order_items, menu_items):
         order_items_restaurants = [
             menu_items[order_item['product']] for order_item in order_items]
         order_restaurants = set.intersection(
             *[set(order_item_restaurants) for order_item_restaurants in order_items_restaurants])
+        return order_restaurants
 
+    def fetch_restaurants_distance(self, menu_items):
+        order_items = self.ordered_items.all().values('product')
+        order_restaurants = self.get_available_restaraunts(order_items, menu_items)
         order_coordinates = fetch_coordinates(self.address)
         order_restaurants_coordinates = []
         for order_restaurant in order_restaurants:
