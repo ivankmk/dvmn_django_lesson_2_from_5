@@ -167,7 +167,8 @@ class Order(models.Model):
         max_length=255,
         choices=ORDER_STATUS_CHOICES,
         default='НЕ ОБРАБОТАН',
-        verbose_name='Статус заказа'
+        verbose_name='Статус заказа',
+        blank=True
     )
 
     comment = models.TextField(
