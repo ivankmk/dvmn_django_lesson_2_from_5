@@ -163,7 +163,7 @@ class Order(models.Model):
         db_index=True
     )
 
-    order_status = models.CharField(
+    status = models.CharField(
         max_length=255,
         choices=ORDER_STATUS_CHOICES,
         default='НЕ ОБРАБОТАН',
