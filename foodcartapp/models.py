@@ -178,7 +178,7 @@ class Order(models.Model):
     )
 
     registered_at = models.DateTimeField(
-        default=datetime.datetime.now, null=True,
+        default=datetime.datetime.now,
         db_index=True
     )
     called_at = models.DateTimeField(
