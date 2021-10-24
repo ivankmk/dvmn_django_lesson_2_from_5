@@ -194,8 +194,7 @@ class Order(models.Model):
     payment_method = models.CharField(
         max_length=255,
         choices=ORDER_PAYMENT_METHODS,
-        verbose_name='Способ оплаты',
-        default='НАЛИЧНЫЕ'
+        verbose_name='Способ оплаты'
     )
 
     restaraunt = models.ForeignKey(
