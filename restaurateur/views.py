@@ -95,7 +95,8 @@ def view_restaurants(request):
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
-    orders = Order.objects.calculate_order_price().all()
+    orders = Order.objects.filter(status='НЕ ОБРАБОТАН').order_by(
+        'registered_at').calculate_order_price().all()
     menu = RestaurantMenuItem.objects.filter(availability=True).select_related(
         'restaurant').select_related('product')
     menu_items = {}
