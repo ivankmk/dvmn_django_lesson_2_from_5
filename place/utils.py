@@ -10,20 +10,22 @@ def fetch_coordinates(place):
         address=place
     )
 
-    if created:
-        try:
-            base_url = 'https://geocode-maps.yandex.ru/1.x'
-            params = {'geocode': place,
-                      'apikey': settings.YANDEX_API_KEY, 'format': 'json'}
-            response = requests.get(base_url, params=params)
-            response.raise_for_status()
-            found_places = response.json(
-            )['response']['GeoObjectCollection']['featureMember']
-            if len(found_places) == 0:
-                return
-            most_relevant = found_places[0]
-            location.longitude, location.latitude = most_relevant['GeoObject']['Point']['pos'].split(' ')
-            location.save()
-        except HTTPError:
-            pass
-    return location.longitude, location.latitude
+    if not created:
+        return location.longitude, location.latitude
+
+    try:
+        base_url = 'https://geocode-maps.yandex.ru/1.x'
+        params = {'geocode': place,
+                  'apikey': settings.YANDEX_API_KEY, 'format': 'json'}
+        response = requests.get(base_url, params=params)
+        response.raise_for_status()
+        found_places = response.json(
+        )['response']['GeoObjectCollection']['featureMember']
+        if len(found_places) == 0:
+            return
+        most_relevant = found_places[0]
+        location.longitude, location.latitude = most_relevant['GeoObject']['Point']['pos'].split(
+            ' ')
+        location.save()
+    except HTTPError:
+        pass
