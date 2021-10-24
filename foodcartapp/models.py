@@ -6,16 +6,6 @@ import datetime
 from place.utils import fetch_coordinates
 from geopy import distance
 
-ORDER_STATUS_CHOICES = (
-    ('ОБРАБОТАН', 'Обработан'),
-    ('НЕ ОБРАБОТАН', 'Не обработан'),
-)
-
-ORDER_PAYMENT_METHODS = (
-    ('ОНЛАЙН', 'Оплата онлайн'),
-    ('НАЛИЧНЫЕ', 'Оплата наличными'),
-)
-
 
 class Restaurant(models.Model):
     name = models.CharField(
@@ -147,6 +137,16 @@ class OrderQuerySet(models.QuerySet):
 
 
 class Order(models.Model):
+    ORDER_STATUS_CHOICES = (
+        ('ОБРАБОТАН', 'Обработан'),
+        ('НЕ ОБРАБОТАН', 'Не обработан'),
+    )
+
+    ORDER_PAYMENT_METHODS = (
+        ('ОНЛАЙН', 'Оплата онлайн'),
+        ('НАЛИЧНЫЕ', 'Оплата наличными'),
+    )
+
     firstname = models.CharField(
         max_length=255,
         verbose_name='Имя'
