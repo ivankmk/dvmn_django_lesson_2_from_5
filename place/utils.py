@@ -1,7 +1,8 @@
 import requests
 from place.models import Place
-from star_burger.settings import YANDEX_API_KEY
+from django.conf import settings
 from requests import HTTPError
+
 
 def fetch_coordinates(place):
 
@@ -13,7 +14,7 @@ def fetch_coordinates(place):
         try:
             base_url = 'https://geocode-maps.yandex.ru/1.x'
             params = {'geocode': place,
-                      'apikey': YANDEX_API_KEY, 'format': 'json'}
+                      'apikey': settings.YANDEX_API_KEY, 'format': 'json'}
             response = requests.get(base_url, params=params)
             response.raise_for_status()
             found_places = response.json(
