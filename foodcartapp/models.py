@@ -172,8 +172,8 @@ class Order(models.Model):
     comment = models.CharField(
         max_length=510,
         verbose_name='Комментарий к заказу',
-        null=True,
-        blank=True
+        blank=True,
+        default=''
     )
 
     registered_at = models.DateTimeField(
