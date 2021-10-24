@@ -238,10 +238,10 @@ class Order(models.Model):
     @staticmethod
     def fetch_distance(order_coordinates, order_restaurant):
         if not order_coordinates[0]:
-            return 0
+            return
         restaurant_coordinates = fetch_coordinates(order_restaurant.address)
         if not restaurant_coordinates[0]:
-            return 0
+            return
         restaurant_distance = distance.distance(
             order_coordinates, restaurant_coordinates).km
         return restaurant_distance

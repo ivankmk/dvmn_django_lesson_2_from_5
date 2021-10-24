@@ -22,8 +22,7 @@ def fetch_coordinates(place):
             if len(found_places) == 0:
                 return
             most_relevant = found_places[0]
-            location.longitude, location.latitude = most_relevant['GeoObject']['Point']['pos'].split(
-                ' ')
+            location.longitude, location.latitude = most_relevant['GeoObject']['Point']['pos'].split(' ')
             location.save()
         except HTTPError:
             pass
